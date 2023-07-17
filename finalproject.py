@@ -6,7 +6,7 @@ print(msg)
 
 print(np.random.randint(1,9))
 
-for num in [1,2,3,4]:
+for num in [1,2,3,4,5]:
     print(num)
 
 l = range(5)
