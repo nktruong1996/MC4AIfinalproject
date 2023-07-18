@@ -3,6 +3,7 @@ import pandas as pd
 import streamlit as st
 import plotly.express as px
 import matplotlib.pyplot as plt
+from sklearn.cluster import KMeans
 
 # importing data
 df = pd.read_csv("py4ai-score.csv")
@@ -105,5 +106,59 @@ df['PASS'] = df.apply(qual, axis=1)
 
 hist_cg=px.histogram(df, x='CLASS-GROUP',color='PASS', color_discrete_sequence= ['#1f77b4','#d62728']) # histogram thể hiện số lượng học sinh đậu/rớt theo class groups
 
-cont=px.histogram(df, x='CLASS-GROUP',color='REG-MC4AI', color_discrete_sequence= ['#1f77b4','#d62728'])
-cont.show()
+cont=px.histogram(df, x='CLASS-GROUP',color='REG-MC4AI', color_discrete_sequence= ['#1f77b4','#d62728']) # histogram thể hiện số lượng học sinh đăng ký học tiếp theo class groups
+
+# dùng KMeans để phân loại học sinh
+X = df[['S1', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7', 'S8', 'S9', 'S10']].values
+
+# dùng phương pháp elbow để xác định k hợp lý
+K = [k for k in range(1, 10)]
+W = []
+
+for k in K:
+  kmeans = KMeans(n_clusters=k, n_init='auto')
+  kmeans.fit(X)
+  w = 0
+  for i in range(k):
+    Xi = X[kmeans.labels_ == i]
+    wi = sum([np.linalg.norm(x-kmeans.cluster_centers_[i]) for x in Xi])
+    w += wi
+  W.append(w)
+plot0=plt.plot(K, W, marker = 'o')
+plt.savefig('general_classification.png', bbox_inches='tight')
+# dựa vào đồ thị bên trên, k=3,5,6 là hợp lý, chọn k=5
+# fit dữ liệu vào thuật toán KMeans với k=5
+kmeans = KMeans(n_clusters=5, n_init='auto')
+kmeans.fit(X)
+classes = np.array(kmeans.labels_)
+print(classes)
+
+df['PL'] = classes
+classification=px.pie(df, names='PL', color_discrete_sequence=['#1f77b4'])
+
+X_ = df[['GPA']].values
+K = [k for k in range(1, 10)]
+W = []
+
+for k in K:
+  kmeans = KMeans(n_clusters=k, n_init='auto')
+  kmeans.fit(X_)
+  w = 0
+  for i in range(k):
+    Xi = X_[kmeans.labels_ == i]
+    wi = sum([np.linalg.norm(x-kmeans.cluster_centers_[i]) for x in Xi])
+    w += wi
+  W.append(w)
+
+plot1=plt.plot(K, W, marker = 'o')
+plt.savefig('general_gpa_classification.png', bbox_inches='tight')
+# dựa trên fig này thì ta thấy rằng phân loại số lượng cluster bằng mấy thì phân loại theo tất cả các cột điểm cũng sẽ tương đối giống với phân loại theo GPA
+
+X0 = df[kmeans.labels_ == 0]['GPA'].mean()
+X1 = df[kmeans.labels_ == 1]['GPA'].mean()
+X2 = df[kmeans.labels_ == 2]['GPA'].mean()
+X3 = df[kmeans.labels_ == 3]['GPA'].mean()
+X4 = df[kmeans.labels_ == 4]['GPA'].mean()
+print(X0,X1,X2,X3,X4)
+
+#
