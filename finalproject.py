@@ -4,6 +4,18 @@ import streamlit as st
 import plotly.express as px
 import matplotlib.pyplot as plt
 from sklearn.cluster import KMeans
+from sklearn.model_selection import train_test_split
+from tensorflow.keras.utils import to_categorical
+import plotly.graph_objects as go
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, Activation, Input, Flatten
+from tensorflow.random import set_seed
+from tensorflow.keras.backend import clear_session
+from sklearn.metrics import confusion_matrix
+import seaborn as sns
+from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import LogisticRegression
+
 
 # importing data
 df = pd.read_csv("py4ai-score.csv")
@@ -161,4 +173,186 @@ X3 = df[kmeans.labels_ == 3]['GPA'].mean()
 X4 = df[kmeans.labels_ == 4]['GPA'].mean()
 print(X0,X1,X2,X3,X4)
 
-#
+# multiclass regression: S-AVG + S6 -> S10
+df['S-AVG'] = (df['S1'] + df['S2'] + df['S3'] + df['S4'] + df['S5'] + df['S7'] + df['S8'] + df['S9']) / 8
+avg6to10 = go.Figure(data=[go.Scatter3d(x=df['S-AVG'], y=df['S6'], z=df['S10'], mode='markers', marker = {'color' : 'blue'})])
+
+def softmax(z):         # hàm softmax
+    e = np.exp(z)
+    return e/e.sum()
+
+# data prep for given labels
+# X = df[['S-AVG','S6']].values
+
+# y = df['S10'].values
+
+# X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=11, random_state=42)
+# y_train_ohe = to_categorical(y_train, num_classes=11)
+# y_test_ohe = to_categorical(y_test, num_classes=11)
+
+# print(y_train.shape, y_train_ohe.shape, y_test.shape, y_test_ohe.shape)
+
+# clear_session()
+# set_seed(42)
+# np.random.seed(42)
+
+# model = Sequential()
+# model.add(Input(shape=X_train.shape[1:]))
+# model.add(Flatten())
+# model.add(Dense(11, activation='softmax'))
+# model.compile(loss='categorical_crossentropy', optimizer='adam', metrics='accuracy')
+# model.summary()
+
+# history = model.fit(X_train, y_train_ohe, epochs = 4500, verbose=1)
+
+# plt.figure(figsize=(10,6))
+# plt.title('Learning Curve')
+# plt.xlabel('Epochs')
+# plt.ylabel('Loss | Accuracy')
+# plt.legend(['Loss', 'Accuracy'])
+# plt.plot(history.history['loss'])
+# plt.plot(history.history['accuracy'])
+# plt.savefig('11_class_classification.png', bbox_inches='tight')
+
+# # data prep for 3-class classification
+# def createclass(row):
+#     if row['S10'] >= 8: return 2            # 2: trên 8
+#     elif row['S10'] >=5: return 1           # 1: từ 5 tới 7
+#     else: return 0                          # 0: còn lại
+
+# df['XL3'] = df.apply(createclass, axis=1)
+
+# X = df[['S-AVG','S6']].values
+
+# y = df['XL3'].values
+
+# X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=11, random_state=42)
+# y_train_ohe = to_categorical(y_train, num_classes=3)
+# y_test_ohe = to_categorical(y_test, num_classes=3)
+
+# print(y_train.shape, y_train_ohe.shape, y_test.shape, y_test_ohe.shape)
+
+# clear_session()
+# set_seed(42)
+# np.random.seed(42)
+
+# model = Sequential()
+# model.add(Input(shape=X_train.shape[1:]))
+# model.add(Flatten())
+# model.add(Dense(3, activation='softmax'))
+# model.compile(loss='categorical_crossentropy', optimizer='adam', metrics='accuracy')
+# model.summary()
+
+# history = model.fit(X_train, y_train_ohe, epochs = 4500, verbose=1)
+
+# plt.figure(figsize=(10,6))
+# plt.title('Learning Curve')
+# plt.xlabel('Epochs')
+# plt.ylabel('Loss | Accuracy')
+# plt.legend(['Loss', 'Accuracy'])
+# plt.plot(history.history['loss'])
+# plt.plot(history.history['accuracy'])
+# plt.savefig('3_class_classification.png', bbox_inches='tight')
+
+# data prep for 2-class classification
+# def createclass2(row):
+#     if row['S10'] >= 6: return 1        # 1: từ 6 trở lên
+#     else: return 0                      # 0: còn lại
+
+# df['XL2'] = df.apply(createclass2, axis=1)
+# X = df[['S-AVG','S6']].values
+
+# y = df['XL2'].values
+
+# X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=15, random_state=41)
+# y_train_ohe = to_categorical(y_train, num_classes=2)
+# y_test_ohe = to_categorical(y_test, num_classes=2)
+
+# print(y_train.shape, y_train_ohe.shape, y_test.shape, y_test_ohe.shape)
+
+# clear_session()
+# set_seed(41)
+# np.random.seed(41)
+
+# model = Sequential()
+# model.add(Input(shape=X_train.shape[1:]))
+# model.add(Flatten())
+# model.add(Dense(2, activation='softmax'))
+# model.compile(loss='categorical_crossentropy', optimizer='adam', metrics='accuracy')
+# model.summary()
+
+# history = model.fit(X_train, y_train_ohe, epochs = 4500, verbose=1)
+
+# plt.figure(figsize=(10,6))
+# plt.title('Learning Curve')
+# plt.xlabel('Epochs')
+# plt.ylabel('Loss | Accuracy')
+# plt.legend(['Loss', 'Accuracy'])
+# plt.plot(history.history['loss'])
+# plt.plot(history.history['accuracy'])
+# plt.savefig('2_class_classification.png', bbox_inches='tight')
+
+# y_test_pred = model.predict(X_test).argmax(axis=1)
+
+# cm = confusion_matrix(y_test, y_test_pred)
+# labels = ['Còn lại', 'Trên 5']
+# plt.figure(figsize=(3,3))
+# sns.heatmap(cm, annot=True, cmap='Blues', yticklabels=labels, xticklabels=labels)
+# plt.savefig('confusion_2_class.png', bbox_inches='tight')
+
+# midterm + final -> GPA
+midfintoGPA = go.Figure(data=[go.Scatter3d(x=df['S6'], y=df['S10'], z=df['GPA'], mode='markers', marker = {'color' : 'blue'})])
+
+
+# linear regression cho trường hợp này
+X = df[['S6', 'S10']].values
+y = df['GPA'].values
+
+# tạo và fit model với data
+midfin = LinearRegression()
+midfin.fit(X,y)
+
+# evaluate
+print(midfin.score(X, y))
+
+# regression plane
+x_plane = np.linspace(0,11,2)
+y_plane = np.linspace(0,11,2)
+
+xx, yy = np.meshgrid(x_plane, y_plane)
+xy = np.c_[xx.ravel(), yy.ravel()]
+z = midfin.predict(xy)
+z = z.reshape(xx.shape)
+
+midfin_plane = go.Figure(data=[go.Scatter3d(x=df['S6'], y=df['S10'], z=df['GPA'], mode='markers', marker = {'color' : 'green'}),
+                      go.Surface(x=x_plane, y=y_plane, z=z)])
+
+# midterm + homework avg -> pass/fail
+X = df[['S6','S-AVG']].values
+y = df['PASS']
+print(X[y==0][:,0])
+
+plt.figure(figsize=(5,5))
+plt.scatter(X[y==0][:,0], X[y==0][:,1], label = 'failed')
+plt.scatter(X[y==1][:,0], X[y==1][:,1], label = 'passed')
+plt.legend()
+plt.savefig('midavgtopass.png')
+
+# logistic regression cho trường hợp này
+midavg = LogisticRegression()
+midavg.fit(X, y)
+
+weights = midavg.coef_[0]
+bias = midavg.intercept_[0]
+weights, bias
+w1, w2 = weights
+
+plt.figure(figsize=(5,5))
+plt.scatter(X[:, 0], X[:, 1], c=y)
+plt.xlabel('x1')
+plt.ylabel('x2')
+
+x1 = np.array([0,10])
+x2 = (-w1 * x1 - bias) / w2
+plt.plot(x1, x2)
+plt.savefig('midavg_regline.png')
